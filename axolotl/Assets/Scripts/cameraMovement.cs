@@ -2,71 +2,77 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
+SOURCE CODE TAKEN FROM: http://wiki.unity3d.com/index.php?title=MouseOrbitImproved
+*/
+
 public class cameraMovement : MonoBehaviour
 {
-    //get rigibody and camera
-    public Transform cameraFakeTransform;
 
-    //mouse limits
-    private float mouseSensitivity = 100.0f;
-    private float clampAngle = 80.0f;
+    public Transform target;
+    public float distance = 8.0f;
+    public float xSpeed = 120.0f;
+    public float ySpeed = 120.0f;
+    public float zSpeed = 5.0f;
 
-    //camera rotation
-    private float rotY = 0.0f;
-    private float rotX = 0.0f;
+    public float yMinLimit = -80f;
+    public float yMaxLimit = 80f;
 
-    //camera zoom limits
-    private float maxZoom = 4f;
-    private float minZoom = 10f;
-    private float camDistance;
-    private const float zoomDampen = 0.5f;
-    private const float zoomSpeed = 0.05f;
+    public float distanceMin = 5f;
+    public float distanceMax = 10f;
+
+    private Rigidbody rigidbody;
+
+    float x = 0.0f;
+    float y = 0.0f;
 
     void Start()
     {
-        //get camera rotation
-        Vector3 rot = transform.localRotation.eulerAngles;
-        rotY = rot.y;
-        rotX = rot.x;
+        Vector3 angles = transform.eulerAngles;
+        x = angles.y;
+        y = angles.x;
 
-        //lock cursor
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        rigidbody = GetComponent<Rigidbody>();
+
+        if (rigidbody != null)
+        {
+            rigidbody.freezeRotation = true;
+        }
     }
 
-    void Update()
+    void LateUpdate()
     {
-        cam();
+        if (target)
+        {
+            x += Input.GetAxis("Mouse X") * xSpeed * distance * 0.02f;
+            y -= Input.GetAxis("Mouse Y") * ySpeed * 0.02f;
+
+            y = ClampAngle(y, yMinLimit, yMaxLimit);
+
+            Quaternion rotation = Quaternion.Euler(y, x, 0);
+
+            distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 10, distanceMin, distanceMax);
+
+            /*RaycastHit hit;
+            if (Physics.Linecast(target.position, transform.position, out hit))
+            {
+                distance -= hit.distance;
+            }*/
+
+            Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
+            Vector3 position = rotation * negDistance + target.position;
+
+            transform.rotation = rotation;
+            transform.position = position;
+        }
     }
 
-    //rotates camera using mouse controls
-    void cam()
+    public static float ClampAngle(float angle, float min, float max)
     {
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = -Input.GetAxis("Mouse Y");
-
-        rotX += mouseX * mouseSensitivity * Time.deltaTime;
-        rotY += mouseY * mouseSensitivity * Time.deltaTime;
-
-        rotY = Mathf.Clamp(rotY, -clampAngle, clampAngle);
-
-        Quaternion localRotation = Quaternion.Euler(rotY, rotX, 0.0f);
-        transform.rotation = localRotation;
-
-        camDistance = Vector3.Distance(cameraFakeTransform.position, transform.position);
-
-        //zoom out (scroll down)
-        if (Input.GetAxis("Mouse ScrollWheel") < 0)
-        {
-            if (camDistance < minZoom) cameraFakeTransform.position += -transform.forward / zoomDampen;
-        }
-
-        //zoom in (scroll up)
-        if (Input.GetAxis("Mouse ScrollWheel") > 0)
-        {
-            if (camDistance > maxZoom) cameraFakeTransform.position += transform.forward / zoomDampen;
-        }
-
-        transform.position = Vector3.Lerp(transform.position, cameraFakeTransform.position, zoomSpeed);
+        if (angle < -360F)
+            angle += 360F;
+        if (angle > 360F)
+            angle -= 360F;
+        return Mathf.Clamp(angle, min, max);
     }
 }
