@@ -9,18 +9,26 @@ public class playerMovement : MonoBehaviour {
 	public Transform cameraTransform;
 
 	//movement speed
-	private float walkSpeed = 4f;
+	private float walkSpeed = 6f;
 	private float sprintSpeed = 10f;
 
-    float rotAroundAxis = 0f;
+    public bool deliverOrbs = false;
+
 
 	void Start () {
+        //lock cursor
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
 		//get rigidbody and camera
 		rb = GetComponent<Rigidbody>();
 	}
 	
 	void Update () {
 		navigation();
+        //trigger delivery
+        if (Input.GetKey(KeyCode.Space)) deliverOrbs = true;
+        else deliverOrbs = false;
 	}
 
 	//move freely in 3 dimensions
@@ -42,7 +50,5 @@ public class playerMovement : MonoBehaviour {
         } else {
             transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
         }
-
-
 	}
 }
