@@ -10,7 +10,7 @@ public class cameraMovement : MonoBehaviour
 {
 
     public Transform target;
-    public float distance = 8.0f;
+    public float distance = 7.0f;
     public float xSpeed = 120.0f;
     public float ySpeed = 120.0f;
     public float zSpeed = 5.0f;
@@ -18,8 +18,8 @@ public class cameraMovement : MonoBehaviour
     public float yMinLimit = -80f;
     public float yMaxLimit = 80f;
 
-    public float distanceMin = 5f;
-    public float distanceMax = 10f;
+    public float distanceMin = 7f;
+    public float distanceMax = 12f;
 
     private Rigidbody rigidbody;
 
@@ -53,13 +53,13 @@ public class cameraMovement : MonoBehaviour
 
             distance = Mathf.Clamp(distance - Input.GetAxis("Mouse ScrollWheel") * 10, distanceMin, distanceMax);
 
-            /*RaycastHit hit;
+            RaycastHit hit;
             if (Physics.Linecast(target.position, transform.position, out hit))
             {
                 distance -= hit.distance;
-            }*/
+            }
 
-            Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
+            Vector3 negDistance = new Vector3(0.0f, 1.1f, -distance);
             Vector3 position = rotation * negDistance + target.position;
 
             transform.rotation = rotation;
